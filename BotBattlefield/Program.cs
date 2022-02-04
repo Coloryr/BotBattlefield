@@ -61,6 +61,7 @@ namespace BotBattlefield
                                     if (data == null)
                                     {
                                         SendMessageGroup(pack.id, $"获取[{name}]BF1游戏统计错误");
+                                        return;
                                     }
                                     var local = await GenShow.GenState(data, GameType.BF1);
                                     SendMessageGroupImg(pack.id, local);
