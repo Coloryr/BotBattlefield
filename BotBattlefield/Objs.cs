@@ -47,4 +47,35 @@ namespace BotBattlefield
         public long repairs;
         public long killAssists;
     }
+
+    public record BF1Team 
+    {
+        public string image;
+        public string key;
+        public string name;
+    }
+
+    public record BF1Server
+    {
+        public string prefix;
+        public int playerAmount;
+        public int maxPlayers;
+        public int inQue;
+        public string serverInfo;
+        public string url;
+        public string mode;
+        public string currentMap;
+        public string ownerId;
+        public string region;
+        public string platform;
+        public string smallMode;
+        public Dictionary<string, BF1Team> teams;
+        public bool official;
+        public string gameId;
+    }
+
+    public record BF1ServerObj
+    {
+        public List<BF1Server> servers;
+    }
 }

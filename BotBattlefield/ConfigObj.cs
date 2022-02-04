@@ -3,14 +3,15 @@ using System.IO;
 
 namespace BotBattlefield
 {
-
     public record ConfigObj
     {
         public ConfigRobot robot { get; set; }
        
         public List<long> Groups { get; set; }
 
-        public string Head { get; set; }
+        public string BF1Head { get; set; }
+        public string BF1ServerHead { get; set; }
+        public Dictionary<long, string> ServerLock { get; set; }
     }
     public record ConfigRobot
     {

@@ -44,11 +44,11 @@ namespace BotBattlefield
                     if (Config.Groups.Contains(pack.id))
                     {
                         var message = pack.message[^1].Split(' ');
-                        if (message[0] == Config.Head)
+                        if (message[0] == Config.BF1Head)
                         {
                             if (message.Length == 1)
                             {
-                                SendMessageGroup(pack.id, $"输入{Config.Head} [ID] 来生成BF1游戏统计");
+                                SendMessageGroup(pack.id, $"输入{Config.BF1Head} [ID] 来生成BF1游戏统计");
                                 break;
                             }
                             var name = message[1];
@@ -70,6 +70,53 @@ namespace BotBattlefield
                                 {
                                     logs.LogError(e);
                                     SendMessageGroup(pack.id, $"获取[{name}]BF1游戏统计错误");
+                                }
+                            });
+                        }
+                        else if (message[0] == Config.BF1ServerHead)
+                        {
+                            string name;
+                            if (Config.ServerLock.ContainsKey(pack.id))
+                            {
+                                if (message.Length > 1)
+                                {
+                                    SendMessageGroup(pack.id, $"该群不能查询其他服务器");
+                                    break;
+                                }
+                                name = Config.ServerLock[pack.id];
+                            }
+                            else if (message.Length == 1)
+                            {
+                                SendMessageGroup(pack.id, $"输入{Config.BF1Head} [服务器名] 来生成BF1服务器信息");
+                                break;
+                            }
+                            else
+                            {
+                                name = message[1];
+                            }
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    SendMessageGroup(pack.id, $"正在获取[{name}]BF1服务器信息");
+                                    var data = await HttpUtils.GetServers(GameType.BF1, name);
+                                    if (data == null)
+                                    {
+                                        SendMessageGroup(pack.id, $"获取[{name}]BF1服务器信息错误");
+                                        return;
+                                    }
+                                    if (data.servers.Count == 0)
+                                    {
+                                        SendMessageGroup(pack.id, $"搜索不到BF1服务器[{name}]");
+                                        return;
+                                    }
+                                    var local = await GenShow.GenServers(data, GameType.BF1, name);
+                                    SendMessageGroupImg(pack.id, local);
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"获取[{name}]BF1服务器信息错误");
                                 }
                             });
                         }
@@ -140,6 +187,28 @@ namespace BotBattlefield
                         }
                         await GenShow.GenState(data, GameType.BF1);
                     }
+                    else if (arg[0] == "server")
+                    {
+                        if (arg.Length < 2)
+                        {
+                            Console.WriteLine("错误的参数");
+                            continue;
+                        }
+
+                        var name = arg[1];
+                        var data = await HttpUtils.GetServers(GameType.BF1, name);
+                        if (data == null)
+                        {
+                            Console.WriteLine("获取错误");
+                            continue;
+                        }
+                        if (data.servers.Count == 0)
+                        {
+                            Console.WriteLine("搜索不到服务器");
+                            continue;
+                        }
+                        await GenShow.GenServers(data, GameType.BF1, name);
+                    }
                 }
             }
         }
@@ -161,8 +230,10 @@ namespace BotBattlefield
                     QQ = 0,
                     Time = 10
                 },
-                Head = "#bf1",
-                Groups = new List<long>()
+                BF1Head = "#bf1",
+                BF1ServerHead = "#bf1s",
+                Groups = new List<long>(),
+                ServerLock = new Dictionary<long, string>()
             }, Local + "config.json");
         }
     }
