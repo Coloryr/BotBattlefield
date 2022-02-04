@@ -96,7 +96,7 @@ namespace BotBattlefield
                 m.DrawText($"复仇击杀 {obj.avengerKills}", font1, text, new PointF(270, 680));
                 m.DrawText($"拯救击杀 {obj.headShots}", font1, text, new PointF(20, 720));
                 m.DrawText($"狗牌获取 {obj.dogtagsTaken}", font1, text, new PointF(270, 720));
-                m.DrawText($"最高击杀 {obj.highestKillStreak}", font1, text, new PointF(20, 760));
+                m.DrawText($"最高连杀 {obj.highestKillStreak}", font1, text, new PointF(20, 760));
                 m.DrawText($"急救数 {obj.revives}", font1, text, new PointF(270, 760));
                 m.DrawText($"治疗数 {obj.heals}", font1, text, new PointF(20, 800));
                 m.DrawText($"维修数 {obj.repairs}", font1, text, new PointF(270, 800));
