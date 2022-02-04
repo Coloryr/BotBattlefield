@@ -13,10 +13,10 @@ namespace BotBattlefield
         private const string BaseUrl = "https://api.gametools.network";
         public static HttpClient client = new()
         {
-            Timeout = TimeSpan.FromSeconds(8)
+            Timeout = TimeSpan.FromSeconds(12)
         };
 
-        public static async Task<StateObj?> GetStats(GameType game, string id)
+        public static async Task<BF1StateObj?> GetStats(GameType game, string id)
         {
             BotMain.Log($"正在获取[{id}]的数据");
             var data = await client.GetAsync($"{BaseUrl}/{game.url}/stats/?format_values=true&name={id}&platform=pc");
@@ -25,7 +25,7 @@ namespace BotBattlefield
                 return null;                
             }
 
-            return JsonConvert.DeserializeObject<StateObj>(await data.Content.ReadAsStringAsync());
+            return JsonConvert.DeserializeObject<BF1StateObj>(await data.Content.ReadAsStringAsync());
         }
         
         public static async Task<byte[]> GetImage(string url) 

@@ -37,7 +37,7 @@ namespace BotBattlefield
             back = Color.Parse("#000000");
             text = Color.Parse("#FFFFFF");
         }
-        public static async Task<string> GenState(StateObj obj, GameType game)
+        public static async Task<string> GenState(BF1StateObj obj, GameType game)
         {
             BotMain.Log($"正在生成[{obj.userName}]的统计图片");
             Image<Rgba32> image = new (500, 820);

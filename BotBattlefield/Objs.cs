@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BotBattlefield
 {
-    public record StateObj
+    public record BF1StateObj
     {
         public string avatar;
         public string userName;
