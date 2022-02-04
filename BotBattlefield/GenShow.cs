@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ColoryrSDK;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace BotBattlefield
 {
@@ -132,7 +133,7 @@ namespace BotBattlefield
         public static async Task<string> GenServers(BF1ServerObj obj, GameType game, string name)
         {
             BotMain.Log($"正在生成[{name}]的BF1服务器图片");
-            Image<Rgba32> server = new(980, obj.servers.Count * 610 + 20);
+            Image<Rgba32> server = new(980, obj.servers.Count * 620 + 20);
             List<Image> servers = new();
             foreach (var server1 in obj.servers)
             {
@@ -205,9 +206,12 @@ namespace BotBattlefield
                 nowY += 620;
             }
 
-            string file = Local + $"{game.url}_{name}_server.png";
-            server.SaveAsPng(file);
-            BotMain.Log($"生成图片[{game.url}_{name}_server.png]");
+            string file = Local + $"{game.url}_{name}_server.jpg";
+            server.SaveAsJpeg(file, new JpegEncoder() 
+            {
+                Quality = 95
+            });
+            BotMain.Log($"生成图片[{game.url}_{name}_server.jpg]");
 
             return file;
         }
