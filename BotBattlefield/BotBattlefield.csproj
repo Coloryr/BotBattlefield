@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DebugType>embedded</DebugType>
+    <BaseIntermediateOutputPath></BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta15.25" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0-alpha.0.168" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13.20" />
+  </ItemGroup>
+
+</Project>
