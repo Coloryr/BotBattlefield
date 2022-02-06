@@ -11,7 +11,18 @@ namespace BotBattlefield
 
         public string BF1Head { get; set; }
         public string BF1ServerHead { get; set; }
+        public string BF1WeaponHead { get; set; }
+        public string BF1VehicleHead { get; set; }
         public Dictionary<long, string> ServerLock { get; set; }
+        public string Help { get; set; }
+        public int CheckDelay { get; set; }
+        public ConfigProxy Proxy { get; set; }
+    }
+    public record ConfigProxy
+    { 
+        public bool Enable { get; set; }
+        public string IP { get; set; }
+        public int Port { get; set; }
     }
     public record ConfigRobot
     {

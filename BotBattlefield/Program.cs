@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using ColoryrSDK;
 using Newtonsoft.Json;
 
@@ -12,6 +13,17 @@ namespace BotBattlefield
         private static Robot robot = new Robot();
         private static Logs logs;
 
+        private static ConcurrentDictionary<string, bool> queues = new();
+
+        public static void SendMessageGroup(long group, List<string> message)
+        {
+            var temp = BuildPack.Build(new SendGroupMessagePack
+            {
+                id = group,
+                message = message
+            }, 52);
+            robot.AddTask(temp);
+        }
         public static void SendMessageGroup(long group, string message)
         {
             var temp = BuildPack.Build(new SendGroupMessagePack
@@ -43,21 +55,58 @@ namespace BotBattlefield
                     var pack = data as GroupMessageEventPack;
                     if (Config.Groups.Contains(pack.id))
                     {
-                        var message = pack.message[^1].Split(' ');
-                        if (message[0] == Config.BF1Head)
+                        var message = pack.message[^1].Trim();
+                        var temp1 = message.Split(' ');
+                        if (temp1[0] == Config.Help)
                         {
-                            if (message.Length == 1)
+                            SendMessageGroup(pack.id, new List<string>() 
                             {
-                                SendMessageGroup(pack.id, $"输入{Config.BF1Head} [ID] 来生成BF1游戏统计");
+                                $"输入{Config.BF1Head} [ID] (平台) 来生成BF1游戏统计\n",
+                                $"输入{Config.BF1ServerHead} [服务器名] 来生成BF1服务器信息\n",
+                                $"输入{Config.BF1WeaponHead} [ID] 来生成BF1武器统计\n",
+                                $"输入{Config.BF1VehicleHead} [ID] 来生成BF1载具统计"
+                            });
+                        }
+                        else if (temp1[0] == Config.BF1Head)
+                        {
+                            var arg = message.Substring(Config.BF1Head.Length).Trim().Split(' ');
+                            if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
+                            {
+                                SendMessageGroup(pack.id, $"输入{Config.BF1Head} [ID] (平台) 来生成BF1游戏统计");
                                 break;
                             }
-                            var name = message[1];
+                            string name = arg[0];
+                            string uname = $"bf1_{name}";
+                            if (queues.ContainsKey(uname)) 
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"正在查询中"
+                                });
+                                break;
+                            }
+                            if (Delay.Check(uname))
+                            {
+                                SendMessageGroup(pack.id, new List<string>() 
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"你的查询过于频繁"
+                                });
+                                break;
+                            }
+                            string pl = "pc";
+                            if (arg.Length > 1)
+                            {
+                                pl = arg[1];
+                            }
                             Task.Run(async () =>
                             {
                                 try
                                 {
+                                    queues.TryAdd(uname, true);
                                     SendMessageGroup(pack.id, $"正在获取[{name}]的BF1游戏统计");
-                                    var data = await HttpUtils.GetStats(GameType.BF1, name);
+                                    var data = await HttpUtils.GetStats(GameType.BF1, name, pl);
                                     if (data == null)
                                     {
                                         SendMessageGroup(pack.id, $"获取[{name}]BF1游戏统计错误");
@@ -66,38 +115,59 @@ namespace BotBattlefield
                                     var local = await GenShow.GenState(data, GameType.BF1);
                                     SendMessageGroupImg(pack.id, local);
                                 }
-                                catch(Exception e)
+                                catch (Exception e)
                                 {
                                     logs.LogError(e);
                                     SendMessageGroup(pack.id, $"获取[{name}]BF1游戏统计错误");
                                 }
+                                finally
+                                {
+                                    Delay.AddDelay(uname);
+                                    queues.TryRemove(uname, out var temp);
+                                }
                             });
                         }
-                        else if (message[0] == Config.BF1ServerHead)
+                        else if (temp1[0] == Config.BF1ServerHead)
                         {
-                            string name;
+                            var name = message.Substring(Config.BF1ServerHead.Length).Trim();
                             if (Config.ServerLock.ContainsKey(pack.id))
                             {
-                                if (message.Length > 1)
+                                if (!string.IsNullOrWhiteSpace(name))
                                 {
                                     SendMessageGroup(pack.id, $"该群不能查询其他服务器");
                                     break;
                                 }
                                 name = Config.ServerLock[pack.id];
                             }
-                            else if (message.Length == 1)
+                            else if(string.IsNullOrWhiteSpace(name))
                             {
-                                SendMessageGroup(pack.id, $"输入{Config.BF1Head} [服务器名] 来生成BF1服务器信息");
+                                SendMessageGroup(pack.id, $"输入{Config.BF1ServerHead} [服务器名] 来生成BF1服务器信息");
                                 break;
                             }
-                            else
+                            string uname = $"bf1s_{name}";
+                            if (queues.ContainsKey(uname))
                             {
-                                name = message[1];
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"正在查询中"
+                                });
+                                break;
+                            }
+                            if (Delay.Check(uname))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"你的查询过于频繁"
+                                });
+                                break;
                             }
                             Task.Run(async () =>
                             {
                                 try
                                 {
+                                    queues.TryAdd(uname, true);
                                     SendMessageGroup(pack.id, $"正在获取[{name}]BF1服务器信息");
                                     var data = await HttpUtils.GetServers(GameType.BF1, name);
                                     if (data == null)
@@ -117,6 +187,121 @@ namespace BotBattlefield
                                 {
                                     logs.LogError(e);
                                     SendMessageGroup(pack.id, $"获取[{name}]BF1服务器信息错误");
+                                }
+                                finally
+                                {
+                                    Delay.AddDelay(uname);
+                                    queues.TryRemove(uname, out var temp);
+                                }
+                            });
+                        }
+                        else if (temp1[0] == Config.BF1WeaponHead)
+                        {
+                            var arg = message.Substring(Config.BF1WeaponHead.Length).Trim().Split(' ');
+                            if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
+                            {
+                                SendMessageGroup(pack.id, $"输入{Config.BF1WeaponHead} [ID] 来生成BF1武器统计");
+                                break;
+                            }
+                            string name = arg[0];
+                            string uname = $"bf1_{name}";
+                            if (queues.ContainsKey(uname))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"正在查询中"
+                                });
+                                break;
+                            }
+                            if (Delay.Check(uname))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"你的查询过于频繁"
+                                });
+                                break;
+                            }
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    queues.TryAdd(uname, true);
+                                    SendMessageGroup(pack.id, $"正在获取[{name}]的BF1武器统计");
+                                    var data = await HttpUtils.GetWeapons(GameType.BF1, name);
+                                    if (data == null)
+                                    {
+                                        SendMessageGroup(pack.id, $"获取[{name}]BF1武器统计错误");
+                                        return;
+                                    }
+                                    var local = await GenShow.GenWeapons(data, GameType.BF1);
+                                    SendMessageGroupImg(pack.id, local);
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"获取[{name}]BF1武器统计错误");
+                                }
+                                finally
+                                {
+                                    Delay.AddDelay(uname);
+                                    queues.TryRemove(uname, out var temp);
+                                }
+                            });
+                        }
+                        else if (temp1[0] == Config.BF1VehicleHead)
+                        {
+                            var arg = message.Substring(Config.BF1VehicleHead.Length).Trim().Split(' ');
+                            if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
+                            {
+                                SendMessageGroup(pack.id, $"输入{Config.BF1VehicleHead} [ID] 来生成BF1载具统计");
+                                break;
+                            }
+                            string name = arg[0];
+                            string uname = $"bf1_{name}";
+                            if (queues.ContainsKey(uname))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"正在查询中"
+                                });
+                                break;
+                            }
+                            if (Delay.Check(uname))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"[mirai:at:{pack.fid}]",
+                                    $"你的查询过于频繁"
+                                });
+                                break;
+                            }
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    queues.TryAdd(uname, true);
+                                    SendMessageGroup(pack.id, $"正在获取[{name}]的BF1载具统计");
+                                    var data = await HttpUtils.GetVehicles(GameType.BF1, name);
+                                    if (data == null)
+                                    {
+                                        SendMessageGroup(pack.id, $"获取[{name}]BF1载具统计错误");
+                                        return;
+                                    }
+                                    var local = await GenShow.GenVehicles(data, GameType.BF1);
+                                    SendMessageGroupImg(pack.id, local);
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"获取[{name}]BF1载具统计错误");
+                                }
+                                finally
+                                {
+                                    Delay.AddDelay(uname);
+                                    queues.TryRemove(uname, out var temp);
                                 }
                             });
                         }
@@ -155,8 +340,10 @@ namespace BotBattlefield
             };
             robot.Set(config);
 
+            HttpUtils.Init();
             GenShow.Init();
 
+            Delay.Start();
             robot.Start();
 
             if (Environment.UserInteractive)
@@ -167,7 +354,7 @@ namespace BotBattlefield
                     var arg = temp.Split(' ');
                     if (arg[0] == "stop")
                     {
-                        robot.Stop();
+                        Close();
                         return;
                     }
                     else if (arg[0] == "state")
@@ -177,9 +364,9 @@ namespace BotBattlefield
                             Console.WriteLine("错误的参数");
                             continue;
                         }
-                       
+
                         var name = arg[1];
-                        var data = await HttpUtils.GetStats(GameType.BF1, name);
+                        var data = await HttpUtils.GetStats(GameType.BF1, name, "pc");
                         if (data == null)
                         {
                             Console.WriteLine("获取错误");
@@ -209,8 +396,48 @@ namespace BotBattlefield
                         }
                         await GenShow.GenServers(data, GameType.BF1, name);
                     }
+                    else if (arg[0] == "weapon") 
+                    {
+                        if (arg.Length < 2)
+                        {
+                            Console.WriteLine("错误的参数");
+                            continue;
+                        }
+
+                        var name = arg[1];
+                        var data = await HttpUtils.GetWeapons(GameType.BF1, name);
+                        if (data == null)
+                        {
+                            Console.WriteLine("获取错误");
+                            continue;
+                        }
+                        await GenShow.GenWeapons(data, GameType.BF1);
+                    }
+                    else if (arg[0] == "vehicle")
+                    {
+                        if (arg.Length < 2)
+                        {
+                            Console.WriteLine("错误的参数");
+                            continue;
+                        }
+
+                        var name = arg[1];
+                        var data = await HttpUtils.GetVehicles(GameType.BF1, name);
+                        if (data == null)
+                        {
+                            Console.WriteLine("获取错误");
+                            continue;
+                        }
+                        await GenShow.GenVehicles(data, GameType.BF1);
+                    }
                 }
             }
+        }
+
+        public static void Close() 
+        {
+            robot.Stop();
+            Delay.Stop();
         }
 
         public static void Log(string data)
@@ -230,8 +457,18 @@ namespace BotBattlefield
                     QQ = 0,
                     Time = 10
                 },
+                Proxy = new() 
+                {
+                    Enable = false,
+                    IP = "127.0.0.1",
+                    Port = 123
+                },
+                CheckDelay = 10,
+                Help = "#bf",
                 BF1Head = "#bf1",
                 BF1ServerHead = "#bf1s",
+                BF1WeaponHead = "#bf1w",
+                BF1VehicleHead = "#bf1v",
                 Groups = new List<long>(),
                 ServerLock = new Dictionary<long, string>()
             }, Local + "config.json");

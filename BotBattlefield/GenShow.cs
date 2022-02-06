@@ -48,7 +48,7 @@ namespace BotBattlefield
         }
         public static async Task<string> GenState(BF1StateObj obj, GameType game)
         {
-            BotMain.Log($"正在生成[{obj.userName}]的统计图片");
+            BotMain.Log($"正在生成[{obj.userName}]的{game.url}统计图片");
             Image<Rgba32> image = new(500, 860);
             var head = await HttpUtils.GetImage(obj.avatar);
             var rank = await HttpUtils.GetImage(obj.rankImg);
@@ -91,7 +91,7 @@ namespace BotBattlefield
                 m.DrawText($"个人统计", font1, text, new PointF(20, 590));
                 m.DrawLines(text, 1, new PointF(0, 635), new PointF(500, 635));
 
-                m.DrawText($"游戏时间 {obj.timePlayed}", font1, text, new PointF(20, 640));
+                m.DrawText($"游戏时间 {obj.timePlayed.Replace("days", "天")}", font1, text, new PointF(20, 640));
                 m.DrawText($"最远爆头 {obj.longestHeadShot}", font1, text, new PointF(20, 680));
                 m.DrawText($"复仇击杀 {obj.avengerKills}", font1, text, new PointF(270, 680));
                 m.DrawText($"拯救击杀 {obj.headShots}", font1, text, new PointF(20, 720));
@@ -130,64 +130,70 @@ namespace BotBattlefield
             }
         }
 
+        public static async Task<Image> GenServer(BF1Server server1)
+        {
+            BF1Team one = server1.teams["teamOne"];
+            BF1Team two = server1.teams["teamTwo"];
+            Image<Rgba32> image = new(980, 630);
+            var map = await HttpUtils.GetImage(server1.url);
+            var team1 = await HttpUtils.GetImage(one.image);
+            var team2 = await HttpUtils.GetImage(two.image);
+            var img = Image.Load(map);
+            var img1 = Image.Load(team1);
+            var img2 = Image.Load(team2);
+            img.Mutate(m => m.Resize(960, 0));
+            img1 = Utils.ZoomImage(img1, 120, 120);
+            img2 = Utils.ZoomImage(img2, 120, 120);
+            image.Mutate(m =>
+            {
+                int a = 0;
+                m.Clear(back);
+                m.DrawImage(img, new Point(10, 10), 1);
+                int now = 0;
+                int all = server1.prefix.Length;
+                string temp1;
+                FontRectangle size;
+                while (true)
+                {
+                    int temp = GetStringLength(server1.prefix[now..], 960);
+                    size = TextMeasurer.Measure(server1.prefix[now..(temp + now)], FontNormalOpt);
+                    m.Fill(back1, new RectangleF(10, 10 + a * 40, size.Width + 2, 40));
+                    m.DrawText(server1.prefix[now..(temp + now)], font1, text, new PointF(10, 10 + a * 40));
+                    now += temp;
+                    a++;
+                    if (now >= all)
+                    {
+                        break;
+                    }
+                }
+
+                m.DrawImage(img1, new Point(310, 260), 1);
+                m.DrawText($"{one.key}", font1, text, new PointF(340, 400));
+                m.DrawImage(img2, new Point(550, 260), 1);
+                m.DrawText($"{two.key}", font1, text, new PointF(580, 400));
+
+                temp1 = $"在线人数 {server1.playerAmount}/{server1.maxPlayers} 排队中 {server1.inQue}";
+                size = TextMeasurer.Measure(temp1, FontNormalOpt);
+                m.Fill(back1, new RectangleF(10, 540, size.Width + 2, 40));
+                m.DrawText(temp1, font1, text, new PointF(10, 540));
+                temp1 = $"模式 {server1.mode} 地图 {server1.currentMap}";
+                size = TextMeasurer.Measure(temp1, FontNormalOpt);
+                m.Fill(back1, new RectangleF(10, 580, size.Width + 2, 40));
+                m.DrawText(temp1, font1, text, new PointF(10, 580));
+            });
+
+            return image;
+        }
+
         public static async Task<string> GenServers(BF1ServerObj obj, GameType game, string name)
         {
-            BotMain.Log($"正在生成[{name}]的BF1服务器图片");
+            BotMain.Log($"正在生成[{name}]的{game.url}服务器图片");
             Image<Rgba32> server = new(980, obj.servers.Count * 620 + 20);
             List<Image> servers = new();
             foreach (var server1 in obj.servers)
             {
-                BF1Team one = server1.teams["teamOne"];
-                BF1Team two = server1.teams["teamTwo"];
-                Image<Rgba32> image = new(980, 630);
-                var map = await HttpUtils.GetImage(server1.url);
-                var team1 = await HttpUtils.GetImage(one.image);
-                var team2 = await HttpUtils.GetImage(two.image);
-                var img = Image.Load(map);
-                var img1 = Image.Load(team1);
-                var img2 = Image.Load(team2);
-                img.Mutate(m => m.Resize(960, 0));
-                img1 = Utils.ZoomImage(img1, 120, 120);
-                img2 = Utils.ZoomImage(img2, 120, 120);
-                image.Mutate(m =>
-                {
-                    int a = 0;
-                    m.Clear(back);
-                    m.DrawImage(img, new Point(10, 10), 1);
-                    int now = 0;
-                    int all = server1.prefix.Length;
-                    string temp1;
-                    FontRectangle size;
-                    while (true)
-                    {
-                        int temp = GetStringLength(server1.prefix[now..], 960);
-                        size = TextMeasurer.Measure(server1.prefix[now..(temp + now)], FontNormalOpt);
-                        m.Fill(back1, new RectangleF(10, 10 + a * 40, size.Width + 2, 40));
-                        m.DrawText(server1.prefix[now..(temp + now)], font1, text, new PointF(10, 10 + a * 40));
-                        now += temp;
-                        a++;
-                        if (now >= all)
-                        {
-                            break;
-                        }
-                    }
-
-                    m.DrawImage(img1, new Point(310, 260), 1);
-                    m.DrawText($"{one.key}", font1, text, new PointF(340, 400));
-                    m.DrawImage(img2, new Point(550, 260), 1);
-                    m.DrawText($"{two.key}", font1, text, new PointF(580, 400));
-
-                    temp1 = $"在线人数 {server1.playerAmount}/{server1.maxPlayers} 排队中 {server1.inQue}";
-                    size = TextMeasurer.Measure(temp1, FontNormalOpt);
-                    m.Fill(back1, new RectangleF(10, 540, size.Width + 2, 40));
-                    m.DrawText(temp1, font1, text, new PointF(10, 540));
-                    temp1 = $"模式 {server1.mode} 地图 {server1.currentMap}";
-                    size = TextMeasurer.Measure(temp1, FontNormalOpt);
-                    m.Fill(back1, new RectangleF(10, 580, size.Width + 2, 40));
-                    m.DrawText(temp1, font1, text, new PointF(10, 580));
-                });
-
-                servers.Add(image);
+                var item = await GenServer(server1);
+                servers.Add(item);
             }
 
             int nowY = 0;
@@ -207,11 +213,135 @@ namespace BotBattlefield
             }
 
             string file = Local + $"{game.url}_{name}_server.jpg";
-            server.SaveAsJpeg(file, new JpegEncoder() 
+            server.SaveAsJpeg(file, new JpegEncoder()
             {
                 Quality = 95
             });
             BotMain.Log($"生成图片[{game.url}_{name}_server.jpg]");
+
+            return file;
+        }
+
+        public static async Task<string> GenWeapons(BF1WeaponsObj obj, GameType game)
+        {
+            BotMain.Log($"正在生成[{obj.userName}]的{game.url}武器图片");
+
+            int count = 0;
+            var list = (from items in obj.weapons orderby items.kills descending select items).ToList();
+            foreach (var item in list)
+            {
+                if (item.kills > 0)
+                {
+                    count++;
+                }
+            }
+            if (count > 10)
+                count = 10;
+            else if (count == 0)
+            {
+                count = 1;
+            }
+
+            int heiall = 170;
+
+            Image<Rgba32> image = new(500, 240 + 170 * count + 10);
+            var head = await HttpUtils.GetImage(obj.avatar);
+            var img = Image.Load(head);
+            img = Utils.ZoomImage(img, 120, 120);
+            image.Mutate(m =>
+            {
+                m.Clear(back);
+                m.DrawText($"{game.name} 武器统计", title, text, new PointF(20, 0));
+                m.DrawImage(img, new Point(20, 50), 1);
+                m.DrawText($"ID {obj.userName}", font1, text, new PointF(150, 70));
+
+                m.DrawLines(text, 1, new PointF(0, 185), new PointF(500, 185));
+                m.DrawText($"击杀前{count}排行", font1, text, new PointF(20, 190));
+                m.DrawLines(text, 1, new PointF(0, 235), new PointF(500, 235));
+
+                int nowY = 240;
+                for (int index = 0; index < count; index++)
+                {
+                    var temp = list[index];
+                    var waepon = HttpUtils.GetImage(temp.image).Result;
+                    var img1 = Image.Load(waepon);
+
+                    m.DrawImage(img1, new Point(10, nowY + 50 + (heiall * index)), 1);
+                    m.DrawText($"{temp.weaponName}", font1, text, new PointF(20, nowY + (heiall * index)));
+                    m.DrawText($"击杀 {temp.kills}", font1, text, new PointF(270, nowY + 40 + (heiall * index)));
+                    m.DrawText($"命中率 {temp.accuracy}", font1, text, new PointF(270, nowY + 80 + (heiall * index)));
+                    m.DrawText($"爆头击杀 {temp.headshotKills}", font1, text, new PointF(20, nowY + 120 + (heiall * index)));
+                    m.DrawText($"爆头率 {temp.headshots}", font1, text, new PointF(270, nowY + 120 + (heiall * index)));
+
+                    m.DrawLines(text, 1, new PointF(0, nowY + 165 + (heiall * index)), new PointF(500, nowY + 165 + (heiall * index)));
+                }
+            });
+
+            string file = Local + $"{game.url}_{obj.userName}_weapon.png";
+            image.SaveAsPng(file);
+            BotMain.Log($"生成图片[{game.url}_{obj.userName}_weapon.png]");
+
+            return file;
+        }
+
+        public static async Task<string> GenVehicles(BF1VehiclesObj obj, GameType game) 
+        {
+            BotMain.Log($"正在生成[{obj.userName}]的{game.url}载具图片");
+
+            int count = 0;
+            var list = (from items in obj.vehicles orderby items.kills descending select items).ToList();
+            foreach (var item in list)
+            {
+                if (item.kills > 0)
+                {
+                    count++;
+                }
+            }
+            if (count > 10)
+                count = 10;
+            else if (count == 0)
+            {
+                count = 1;
+            }
+
+            int heiall = 170;
+
+            Image<Rgba32> image = new(500, 240 + 170 * count + 10);
+            var head = await HttpUtils.GetImage(obj.avatar);
+            var img = Image.Load(head);
+            img = Utils.ZoomImage(img, 120, 120);
+            image.Mutate(m =>
+            {
+                m.Clear(back);
+                m.DrawText($"{game.name} 载具统计", title, text, new PointF(20, 0));
+                m.DrawImage(img, new Point(20, 50), 1);
+                m.DrawText($"ID {obj.userName}", font1, text, new PointF(150, 70));
+
+                m.DrawLines(text, 1, new PointF(0, 185), new PointF(500, 185));
+                m.DrawText($"击杀前{count}排行", font1, text, new PointF(20, 190));
+                m.DrawLines(text, 1, new PointF(0, 235), new PointF(500, 235));
+
+                int nowY = 240;
+                for (int index = 0; index < count; index++)
+                {
+                    var temp = list[index];
+                    var waepon = HttpUtils.GetImage(temp.image).Result;
+                    var img1 = Image.Load(waepon);
+
+                    m.DrawImage(img1, new Point(10, nowY + 50 + (heiall * index)), 1);
+                    m.DrawText($"{temp.vehicleName}", font1, text, new PointF(20, nowY + (heiall * index)));
+                    m.DrawText($"击杀 {temp.kills}", font1, text, new PointF(270, nowY + 40 + (heiall * index)));
+                    m.DrawText($"KPM {temp.killsPerMinute}", font1, text, new PointF(270, nowY + 80 + (heiall * index)));
+                    m.DrawText($"摧毁数 {temp.destroyed}", font1, text, new PointF(20, nowY + 120 + (heiall * index)));
+                    //m.DrawText($"爆头率 {temp.headshots}", font1, text, new PointF(270, nowY + 120 + (heiall * index)));
+
+                    m.DrawLines(text, 1, new PointF(0, nowY + 165 + (heiall * index)), new PointF(500, nowY + 165 + (heiall * index)));
+                }
+            });
+
+            string file = Local + $"{game.url}_{obj.userName}_vehicle.png";
+            image.SaveAsPng(file);
+            BotMain.Log($"生成图片[{game.url}_{obj.userName}_vehicle.png]");
 
             return file;
         }

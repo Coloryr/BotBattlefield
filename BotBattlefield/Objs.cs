@@ -78,4 +78,48 @@ namespace BotBattlefield
     {
         public List<BF1Server> servers;
     }
+
+    public class BF1Weapon
+    {
+        public string weaponName;
+        public string type;
+        public string image;
+        public long timeEquipped;
+        public long kills;
+        public float killsPerMinute;
+        public long headshotKills;
+        public string headshots;
+        public long shotsFired;
+        public long shotsHit;
+        public string accuracy;
+        public float hitVKills;
+    }
+
+    public record BF1WeaponsObj
+    {
+        public string avatar;
+        public string userName;
+        public long id;
+        public List<BF1Weapon> weapons;
+    }
+
+    public class BF1Vehicle
+    {
+        public string vehicleName;
+        public string type;
+        public string image;
+        public long timeEquipped;
+        public long kills;
+        public float killsPerMinute;
+        public long destroyed;
+        public long timeIn;
+    }
+
+    public record BF1VehiclesObj
+    {
+        public string avatar;
+        public string userName;
+        public long id;
+        public List<BF1Vehicle> vehicles;
+    }
 }
