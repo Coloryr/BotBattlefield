@@ -23,6 +23,9 @@ namespace BotBattlefield
         private static Color text;
         private static Color back1;
         private static TextOptions FontNormalOpt;
+
+        private static Image star = Image.Load(Resource1.star);
+
         public static void Init()
         {
             Local = BotMain.Local + "temp/";
@@ -45,6 +48,8 @@ namespace BotBattlefield
             {
 
             };
+
+            star.Mutate(m => m.Resize(30, 30));
         }
         public static async Task<string> GenState(BF1StateObj obj, GameType game)
         {
@@ -244,10 +249,34 @@ namespace BotBattlefield
 
             int heiall = 170;
 
-            Image<Rgba32> image = new(500, 240 + 170 * count + 10);
+            Image<Rgba32> image = new(500, 380 + 170 * count + 10);
             var head = await HttpUtils.GetImage(obj.avatar);
             var img = Image.Load(head);
             img = Utils.ZoomImage(img, 120, 120);
+
+            long kills = 0;
+            long count1 = 0;
+            long headkills = 0;
+            long shotsFireds = 0;
+            long shotsHit = 0;
+            float kpms = 0f;
+
+            foreach (var item in list)
+            {
+                if (item.timeEquipped <= 0)
+                    continue;
+                kills += item.kills;
+                headkills += item.headshotKills;
+                shotsFireds += item.shotsFired;
+                shotsHit += item.shotsHit;
+                kpms += item.killsPerMinute;
+                count1++;
+            }
+
+            float accuracys = (float)shotsHit / shotsFireds * 100;
+            kpms /= count1;
+            float headshots = (float)headkills / kills * 100;
+
             image.Mutate(m =>
             {
                 m.Clear(back);
@@ -256,21 +285,34 @@ namespace BotBattlefield
                 m.DrawText($"ID {obj.userName}", font1, text, new PointF(150, 70));
 
                 m.DrawLines(text, 1, new PointF(0, 185), new PointF(500, 185));
-                m.DrawText($"击杀前{count}排行", font1, text, new PointF(20, 190));
+                m.DrawText($"全部统计", font1, text, new PointF(20, 190));
                 m.DrawLines(text, 1, new PointF(0, 235), new PointF(500, 235));
 
-                int nowY = 240;
+                m.DrawText($"总击杀 {kills}", font1, text, new PointF(20, 240));
+                m.DrawText($"平均KPM {kpms:0.00}", font1, text, new PointF(270, 240));
+                m.DrawText($"命中率 {accuracys:0.00}%", font1, text, new PointF(20, 280));
+                m.DrawText($"爆头率 {headshots:0.00}%", font1, text, new PointF(270, 280));
+
+                m.DrawLines(text, 1, new PointF(0, 325), new PointF(500, 325));
+                m.DrawText($"击杀前{count}排行", font1, text, new PointF(20, 330));
+                m.DrawLines(text, 1, new PointF(0, 375), new PointF(500, 375));
+
+                int nowY = 380;
                 for (int index = 0; index < count; index++)
                 {
                     var temp = list[index];
                     var waepon = HttpUtils.GetImage(temp.image).Result;
                     var img1 = Image.Load(waepon);
 
-                    m.DrawImage(img1, new Point(10, nowY + 50 + (heiall * index)), 1);
+                    m.DrawImage(img1, new Point(10, nowY + 40 + (heiall * index)), 1);
+                    m.DrawImage(star, new Point(10, nowY + 90 + (heiall * index)), 1);
+
+                    m.DrawText($"{temp.kills / 100}", font, text, new PointF(45, nowY + 85 + (heiall * index)));
+
                     m.DrawText($"{temp.weaponName}", font1, text, new PointF(20, nowY + (heiall * index)));
                     m.DrawText($"击杀 {temp.kills}", font1, text, new PointF(270, nowY + 40 + (heiall * index)));
                     m.DrawText($"命中率 {temp.accuracy}", font1, text, new PointF(270, nowY + 80 + (heiall * index)));
-                    m.DrawText($"爆头击杀 {temp.headshotKills}", font1, text, new PointF(20, nowY + 120 + (heiall * index)));
+                    m.DrawText($"KPM {temp.killsPerMinute}", font1, text, new PointF(20, nowY + 120 + (heiall * index)));
                     m.DrawText($"爆头率 {temp.headshots}", font1, text, new PointF(270, nowY + 120 + (heiall * index)));
 
                     m.DrawLines(text, 1, new PointF(0, nowY + 165 + (heiall * index)), new PointF(500, nowY + 165 + (heiall * index)));
@@ -306,10 +348,28 @@ namespace BotBattlefield
 
             int heiall = 170;
 
-            Image<Rgba32> image = new(500, 240 + 170 * count + 10);
+            Image<Rgba32> image = new(500, 380 + 170 * count + 10);
             var head = await HttpUtils.GetImage(obj.avatar);
             var img = Image.Load(head);
             img = Utils.ZoomImage(img, 120, 120);
+
+            long kills = 0;
+            long count1 = 0;
+            long destroyeds = 0;
+            float kpms = 0f;
+
+            foreach (var item in list)
+            {
+                if (item.timeIn <= 0)
+                    continue;
+                kills += item.kills;
+                destroyeds += item.destroyed;
+                kpms += item.killsPerMinute;
+                count1++;
+            }
+
+            kpms /= count1;
+
             image.Mutate(m =>
             {
                 m.Clear(back);
@@ -318,10 +378,18 @@ namespace BotBattlefield
                 m.DrawText($"ID {obj.userName}", font1, text, new PointF(150, 70));
 
                 m.DrawLines(text, 1, new PointF(0, 185), new PointF(500, 185));
-                m.DrawText($"击杀前{count}排行", font1, text, new PointF(20, 190));
+                m.DrawText($"全部统计", font1, text, new PointF(20, 190));
                 m.DrawLines(text, 1, new PointF(0, 235), new PointF(500, 235));
 
-                int nowY = 240;
+                m.DrawText($"总击杀 {kills}", font1, text, new PointF(20, 240)); 
+                m.DrawText($"总摧毁 {destroyeds}", font1, text, new PointF(270, 240));
+                m.DrawText($"平均KPM {kpms:0.00}", font1, text, new PointF(20, 280));
+
+                m.DrawLines(text, 1, new PointF(0, 325), new PointF(500, 325));
+                m.DrawText($"击杀前{count}排行", font1, text, new PointF(20, 330));
+                m.DrawLines(text, 1, new PointF(0, 375), new PointF(500, 375));
+
+                int nowY = 380;
                 for (int index = 0; index < count; index++)
                 {
                     var temp = list[index];
@@ -329,11 +397,14 @@ namespace BotBattlefield
                     var img1 = Image.Load(waepon);
 
                     m.DrawImage(img1, new Point(10, nowY + 50 + (heiall * index)), 1);
+                    m.DrawImage(star, new Point(10, nowY + 123 + (heiall * index)), 1);
+
+                    m.DrawText($"{temp.kills / 100}", font1, text, new PointF(50, nowY + 120 + (heiall * index)));
+
                     m.DrawText($"{temp.vehicleName}", font1, text, new PointF(20, nowY + (heiall * index)));
                     m.DrawText($"击杀 {temp.kills}", font1, text, new PointF(270, nowY + 40 + (heiall * index)));
                     m.DrawText($"KPM {temp.killsPerMinute}", font1, text, new PointF(270, nowY + 80 + (heiall * index)));
-                    m.DrawText($"摧毁数 {temp.destroyed}", font1, text, new PointF(20, nowY + 120 + (heiall * index)));
-                    //m.DrawText($"爆头率 {temp.headshots}", font1, text, new PointF(270, nowY + 120 + (heiall * index)));
+                    m.DrawText($"摧毁数 {temp.destroyed}", font1, text, new PointF(270, nowY + 120 + (heiall * index)));
 
                     m.DrawLines(text, 1, new PointF(0, nowY + 165 + (heiall * index)), new PointF(500, nowY + 165 + (heiall * index)));
                 }

@@ -108,7 +108,6 @@ namespace BotBattlefield
         public string vehicleName;
         public string type;
         public string image;
-        public long timeEquipped;
         public long kills;
         public float killsPerMinute;
         public long destroyed;

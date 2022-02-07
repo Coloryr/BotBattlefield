@@ -65,7 +65,7 @@ namespace BotBattlefield
 
         public static async Task<BF1VehiclesObj?> GetVehicles(GameType game, string name)
         {
-            BotMain.Log($"正在获取[{name}]的{game.url}武器数据");
+            BotMain.Log($"正在获取[{name}]的{game.url}载具数据");
             var data = await client.GetAsync($"{BaseUrl}/{game.url}/vehicles/?format_values=true&name={name}&platform=pc");
             if (data.StatusCode != HttpStatusCode.OK)
             {
