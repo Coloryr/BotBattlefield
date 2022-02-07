@@ -55,24 +55,40 @@ namespace BotBattlefield
                     var pack = data as GroupMessageEventPack;
                     if (Config.Groups.Contains(pack.id))
                     {
+                        var Help = Config.Help;
+                        var BF1Head = Config.BF1Head;
+                        var BF1ServerHead = Config.BF1ServerHead;
+                        var BF1WeaponHead = Config.BF1WeaponHead;
+                        var BF1VehicleHead = Config.BF1VehicleHead;
+
+                        if (Config.GroupHeads.ContainsKey(pack.id))
+                        {
+                            var item = Config.GroupHeads[pack.id];
+                            Help = item.Help;
+                            BF1Head = item.BF1Head;
+                            BF1ServerHead = item.BF1ServerHead;
+                            BF1WeaponHead = item.BF1WeaponHead;
+                            BF1VehicleHead = item.BF1VehicleHead;
+                        }
+
                         var message = pack.message[^1].Trim();
                         var temp1 = message.Split(' ');
-                        if (temp1[0] == Config.Help)
+                        if (temp1[0] == Help)
                         {
                             SendMessageGroup(pack.id, new List<string>() 
                             {
-                                $"输入{Config.BF1Head} [ID] (平台) 来生成BF1游戏统计\n",
-                                $"输入{Config.BF1ServerHead} [服务器名] 来生成BF1服务器信息\n",
-                                $"输入{Config.BF1WeaponHead} [ID] 来生成BF1武器统计\n",
-                                $"输入{Config.BF1VehicleHead} [ID] 来生成BF1载具统计"
+                                $"输入{BF1Head} [ID] (平台) 来生成BF1游戏统计\n",
+                                $"输入{BF1ServerHead} [服务器名] 来生成BF1服务器信息\n",
+                                $"输入{BF1WeaponHead} [ID] 来生成BF1武器统计\n",
+                                $"输入{BF1VehicleHead} [ID] 来生成BF1载具统计"
                             });
                         }
-                        else if (temp1[0] == Config.BF1Head)
+                        else if (temp1[0] == BF1Head)
                         {
-                            var arg = message.Substring(Config.BF1Head.Length).Trim().Split(' ');
+                            var arg = message.Substring(BF1Head.Length).Trim().Split(' ');
                             if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
                             {
-                                SendMessageGroup(pack.id, $"输入{Config.BF1Head} [ID] (平台) 来生成BF1游戏统计");
+                                SendMessageGroup(pack.id, $"输入{BF1Head} [ID] (平台) 来生成BF1游戏统计");
                                 break;
                             }
                             string name = arg[0];
@@ -127,9 +143,9 @@ namespace BotBattlefield
                                 }
                             });
                         }
-                        else if (temp1[0] == Config.BF1ServerHead)
+                        else if (temp1[0] == BF1ServerHead)
                         {
-                            var name = message.Substring(Config.BF1ServerHead.Length).Trim();
+                            var name = message.Substring(BF1ServerHead.Length).Trim();
                             if (Config.ServerLock.ContainsKey(pack.id))
                             {
                                 if (!string.IsNullOrWhiteSpace(name))
@@ -141,7 +157,7 @@ namespace BotBattlefield
                             }
                             else if(string.IsNullOrWhiteSpace(name))
                             {
-                                SendMessageGroup(pack.id, $"输入{Config.BF1ServerHead} [服务器名] 来生成BF1服务器信息");
+                                SendMessageGroup(pack.id, $"输入{BF1ServerHead} [服务器名] 来生成BF1服务器信息");
                                 break;
                             }
                             string uname = $"bf1s_{name}";
@@ -195,12 +211,12 @@ namespace BotBattlefield
                                 }
                             });
                         }
-                        else if (temp1[0] == Config.BF1WeaponHead)
+                        else if (temp1[0] == BF1WeaponHead)
                         {
-                            var arg = message.Substring(Config.BF1WeaponHead.Length).Trim().Split(' ');
+                            var arg = message.Substring(BF1WeaponHead.Length).Trim().Split(' ');
                             if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
                             {
-                                SendMessageGroup(pack.id, $"输入{Config.BF1WeaponHead} [ID] 来生成BF1武器统计");
+                                SendMessageGroup(pack.id, $"输入{BF1WeaponHead} [ID] 来生成BF1武器统计");
                                 break;
                             }
                             string name = arg[0];
@@ -250,12 +266,12 @@ namespace BotBattlefield
                                 }
                             });
                         }
-                        else if (temp1[0] == Config.BF1VehicleHead)
+                        else if (temp1[0] == BF1VehicleHead)
                         {
-                            var arg = message.Substring(Config.BF1VehicleHead.Length).Trim().Split(' ');
+                            var arg = message.Substring(BF1VehicleHead.Length).Trim().Split(' ');
                             if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
                             {
-                                SendMessageGroup(pack.id, $"输入{Config.BF1VehicleHead} [ID] 来生成BF1载具统计");
+                                SendMessageGroup(pack.id, $"输入{BF1VehicleHead} [ID] 来生成BF1载具统计");
                                 break;
                             }
                             string name = arg[0];
@@ -469,8 +485,9 @@ namespace BotBattlefield
                 BF1ServerHead = "#bf1s",
                 BF1WeaponHead = "#bf1w",
                 BF1VehicleHead = "#bf1v",
-                Groups = new List<long>(),
-                ServerLock = new Dictionary<long, string>()
+                GroupHeads = new(),
+                Groups = new(),
+                ServerLock = new()
             }, Local + "config.json");
         }
     }

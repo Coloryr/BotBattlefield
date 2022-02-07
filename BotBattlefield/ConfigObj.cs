@@ -17,6 +17,7 @@ namespace BotBattlefield
         public string Help { get; set; }
         public int CheckDelay { get; set; }
         public ConfigProxy Proxy { get; set; }
+        public Dictionary<long, GroupHead> GroupHeads { get; set; }
     }
     public record ConfigProxy
     { 
@@ -31,5 +32,14 @@ namespace BotBattlefield
         public long QQ { get; set; }
         public bool Auto { get; set; }
         public int Time { get; set; }
+    }
+
+    public record GroupHead 
+    {
+        public string Help { get; set; }
+        public string BF1Head { get; set; }
+        public string BF1ServerHead { get; set; }
+        public string BF1WeaponHead { get; set; }
+        public string BF1VehicleHead { get; set; }
     }
 }
