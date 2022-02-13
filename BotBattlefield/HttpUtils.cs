@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace BotBattlefield
 {
@@ -27,10 +28,15 @@ namespace BotBattlefield
 
         public static HttpClient client;
 
-        public static async Task<BF1StateObj?> GetStats(GameType game, string id, string platform)
+        public static void Stop() 
         {
-            BotMain.Log($"正在获取[{id}]的{game.url}数据");
-            var data = await client.GetAsync($"{BaseUrl}/{game.url}/stats/?format_values=true&name={id}&platform={platform}");
+            client?.Dispose();
+        }
+
+        public static async Task<BF1StateObj?> GetStats(GameType game, string name, string platform)
+        {
+            BotMain.Log($"正在获取[{name}]的{game.url}数据");
+            var data = await client.GetAsync($"{BaseUrl}/{game.url}/stats/?format_values=true&name={HttpUtility.UrlEncode(name)}&platform={platform}");
             if (data.StatusCode != HttpStatusCode.OK)
             {
                 return null;                
@@ -42,7 +48,7 @@ namespace BotBattlefield
         public static async Task<BF1ServerObj?> GetServers(GameType game, string name)
         {
             BotMain.Log($"正在获取[{name}]BF1的服务器信息");
-            var data = await client.GetAsync($"{BaseUrl}/{game.url}/servers/?name={name}&platform=pc&region=all&limit=10");
+            var data = await client.GetAsync($"{BaseUrl}/{game.url}/servers/?name={HttpUtility.UrlEncode(name)}&platform=pc&region=all&limit=10");
             if (data.StatusCode != HttpStatusCode.OK)
             {
                 return null;
@@ -54,7 +60,7 @@ namespace BotBattlefield
         public static async Task<BF1WeaponsObj?> GetWeapons(GameType game, string name)
         {
             BotMain.Log($"正在获取[{name}]的{game.url}武器数据");
-            var data = await client.GetAsync($"{BaseUrl}/{game.url}/weapons/?format_values=true&name={name}&platform=pc");
+            var data = await client.GetAsync($"{BaseUrl}/{game.url}/weapons/?format_values=true&name={HttpUtility.UrlEncode(name)}&platform=pc");
             if (data.StatusCode != HttpStatusCode.OK)
             {
                 return null;
@@ -66,7 +72,7 @@ namespace BotBattlefield
         public static async Task<BF1VehiclesObj?> GetVehicles(GameType game, string name)
         {
             BotMain.Log($"正在获取[{name}]的{game.url}载具数据");
-            var data = await client.GetAsync($"{BaseUrl}/{game.url}/vehicles/?format_values=true&name={name}&platform=pc");
+            var data = await client.GetAsync($"{BaseUrl}/{game.url}/vehicles/?format_values=true&name={HttpUtility.UrlEncode(name)}&platform=pc");
             if (data.StatusCode != HttpStatusCode.OK)
             {
                 return null;

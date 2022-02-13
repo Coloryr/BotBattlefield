@@ -454,6 +454,7 @@ namespace BotBattlefield
         {
             robot.Stop();
             Delay.Stop();
+            HttpUtils.Stop();
         }
 
         public static void Log(string data)
