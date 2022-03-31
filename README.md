@@ -1,6 +1,8 @@
 # BotBattlefield
 一个战地查询机器人插件
 
+不会构建？加群：571239090获取
+
 使用[ColorMirai](https://github.com/Coloryr/ColorMirai)
 
 注：启动前请安装net6
