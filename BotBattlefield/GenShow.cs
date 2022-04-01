@@ -304,15 +304,21 @@ namespace BotBattlefield
                     var waepon = HttpUtils.GetImage(temp.image).Result;
                     var img1 = Image.Load(waepon);
 
-                    m.DrawImage(img1, new Point(10, nowY + 40 + (heiall * index)), 1);
-                    m.DrawImage(star, new Point(10, nowY + 90 + (heiall * index)), 1);
+                    m.DrawImage(img1, new Point(10, nowY + 50 + (heiall * index)), 1);
+                    m.DrawImage(star, new Point(10, nowY + 120 + (heiall * index)), 1);
 
-                    m.DrawText($"{temp.kills / 100}", font, text, new PointF(45, nowY + 85 + (heiall * index)));
+                    long temp1 = temp.kills / 100;
+                    if (temp1 > 100)
+                    {
+                        temp1 = 100;
+                    }
+
+                    m.DrawText($"{temp1}", font1, text, new PointF(45, nowY + 120 + (heiall * index)));
 
                     m.DrawText($"{temp.weaponName}", font1, text, new PointF(20, nowY + (heiall * index)));
                     m.DrawText($"击杀 {temp.kills}", font1, text, new PointF(270, nowY + 40 + (heiall * index)));
                     m.DrawText($"命中率 {temp.accuracy}", font1, text, new PointF(270, nowY + 80 + (heiall * index)));
-                    m.DrawText($"KPM {temp.killsPerMinute}", font1, text, new PointF(20, nowY + 120 + (heiall * index)));
+                    m.DrawText($"KPM {temp.killsPerMinute}", font1, text, new PointF(110, nowY + 120 + (heiall * index)));
                     m.DrawText($"爆头率 {temp.headshots}", font1, text, new PointF(270, nowY + 120 + (heiall * index)));
 
                     m.DrawLines(text, 1, new PointF(0, nowY + 165 + (heiall * index)), new PointF(500, nowY + 165 + (heiall * index)));
