@@ -227,12 +227,21 @@ namespace BotBattlefield
             return file;
         }
 
-        public static async Task<string> GenWeapons(BF1WeaponsObj obj, GameType game)
+        public static async Task<string> GenWeapons(BF1WeaponsObj obj, GameType game, WeaponType wtype)
         {
             BotMain.Log($"正在生成[{obj.userName}]的{game.url}武器图片");
 
+            List<BF1Weapon> wlist = new();
+
+            if (wtype != null)
+            {
+                wlist.AddRange(from items in obj.weapons where items.type == wtype.typeName select items);
+            }
+            else
+                wlist.AddRange(obj.weapons);
+
             int count = 0;
-            var list = (from items in obj.weapons orderby items.kills descending select items).ToList();
+            var list = (from items in wlist orderby items.kills descending select items).ToList();
             foreach (var item in list)
             {
                 if (item.kills > 0)

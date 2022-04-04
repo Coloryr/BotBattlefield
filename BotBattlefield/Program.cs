@@ -79,7 +79,8 @@ namespace BotBattlefield
                             {
                                 $"输入{BF1Head} [ID] (平台) 来生成BF1游戏统计\n",
                                 $"输入{BF1ServerHead} [服务器名] 来生成BF1服务器信息\n",
-                                $"输入{BF1WeaponHead} [ID] 来生成BF1武器统计\n",
+                                $"输入{BF1WeaponHead} [ID] (类别) 来生成BF1武器统计\n",
+                                "类别：特种 机枪 近战 狙击枪 装备 自动装填步枪 手雷 步枪 散弹枪 驾驶员武器 冲锋枪 手枪",
                                 $"输入{BF1VehicleHead} [ID] 来生成BF1载具统计"
                             });
                         }
@@ -216,10 +217,24 @@ namespace BotBattlefield
                             var arg = message.Substring(BF1WeaponHead.Length).Trim().Split(' ');
                             if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
                             {
-                                SendMessageGroup(pack.id, $"输入{BF1WeaponHead} [ID] 来生成BF1武器统计");
+                                SendMessageGroup(pack.id, $"输入{BF1WeaponHead} [ID] (类别) 来生成BF1武器统计");
                                 break;
                             }
                             string name = arg[0];
+                            WeaponType wtype = null;
+                            if (arg.Length > 1)
+                            {
+                                wtype = WeaponType.GetType(arg[1]);
+                                if (wtype == null)
+                                {
+                                    SendMessageGroup(pack.id, new List<string>()
+                                    {
+                                        $"[mirai:at:{pack.fid}]",
+                                        $"没有找到武器：{arg[1]}"
+                                    });
+                                    break;
+                                }
+                            }
                             string uname = $"bf1_{name}";
                             if (queues.ContainsKey(uname))
                             {
@@ -244,20 +259,20 @@ namespace BotBattlefield
                                 try
                                 {
                                     queues.TryAdd(uname, true);
-                                    SendMessageGroup(pack.id, $"正在获取[{name}]的BF1武器统计");
+                                    SendMessageGroup(pack.id, $"正在获取[{name}]的BF1{(wtype == null ? "武器" : wtype.name)}统计");
                                     var data = await HttpUtils.GetWeapons(GameType.BF1, name);
                                     if (data == null)
                                     {
-                                        SendMessageGroup(pack.id, $"获取[{name}]BF1武器统计错误");
+                                        SendMessageGroup(pack.id, $"获取[{name}]BF1{(wtype == null ? "武器" : wtype.name)}统计错误");
                                         return;
                                     }
-                                    var local = await GenShow.GenWeapons(data, GameType.BF1);
+                                    var local = await GenShow.GenWeapons(data, GameType.BF1, wtype);
                                     SendMessageGroupImg(pack.id, local);
                                 }
                                 catch (Exception e)
                                 {
                                     logs.LogError(e);
-                                    SendMessageGroup(pack.id, $"获取[{name}]BF1武器统计错误");
+                                    SendMessageGroup(pack.id, $"获取[{name}]BF1武器{(wtype == null ? "武器" : wtype.name)}错误");
                                 }
                                 finally
                                 {
@@ -427,7 +442,7 @@ namespace BotBattlefield
                             Console.WriteLine("获取错误");
                             continue;
                         }
-                        await GenShow.GenWeapons(data, GameType.BF1);
+                        await GenShow.GenWeapons(data, GameType.BF1, null);
                     }
                     else if (arg[0] == "vehicle")
                     {
