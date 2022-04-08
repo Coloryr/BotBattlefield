@@ -731,9 +731,10 @@ namespace BotBattlefield
                 }
             });
 
-            image.SaveAsPng("test.png");
+            string file = Local + $"server_score.png";
+            image.SaveAsPng(file);
             BotMain.Log($"生成图片[server_score.png]");
-            return null;
+            return file;
         }
     }
 }
