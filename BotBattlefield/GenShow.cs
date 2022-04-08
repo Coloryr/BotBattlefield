@@ -437,7 +437,7 @@ namespace BotBattlefield
             return file;
         }
 
-        public static async Task<string> GenSocre(ScoreInfoObj obj)
+        public static async Task<string> GenScore(ScoreInfoObj obj)
         {
             BotMain.Log($"正在生成服务器计分板");
 

@@ -392,12 +392,13 @@ namespace BotBattlefield
                                 {
                                     $"正在生成中",
                                 });
+                                return;
                             }
-                            queues.TryAdd("Netty_Gen_Socre!", true);
                             Task.Run(async () =>
                             {
                                 try
                                 {
+                                    queues.TryAdd("Netty_Gen_Socre!", true);
                                     SendMessageGroup(pack.id, new List<string>()
                                     {
                                         $"正在生成服务器计分板",
@@ -416,18 +417,31 @@ namespace BotBattlefield
                                     {
                                         SendMessageGroup(pack.id, new List<string>()
                                         {
-                                            $"生成服务器计分板失败",
+                                            $"服务器计分板获取失败",
                                         });
                                     }
                                     else
                                     {
-                                        
+                                        var local = await GenShow.GenScore(res);
+                                        if (local == null)
+                                        {
+                                            SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"生成服务器计分板失败",
+                                        });
+                                            return;
+                                        }
+                                        SendMessageGroupImg(pack.id, local);
                                     }
                                 }
                                 catch (Exception e)
                                 {
                                     logs.LogError(e);
                                     SendMessageGroup(pack.id, $"生成服务器计分板错误");
+                                }
+                                finally
+                                {
+                                    queues.TryRemove("Netty_Gen_Socre!", out var temp);
                                 }
                             });
                         }
@@ -859,7 +873,7 @@ namespace BotBattlefield
                                 Console.WriteLine("生成错误");
                                 break;
                             }
-                            await GenShow.GenSocre(res);
+                            await GenShow.GenScore(res);
                         }
                         catch (Exception e)
                         {
