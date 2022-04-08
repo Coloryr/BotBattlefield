@@ -78,9 +78,10 @@ namespace BotBattlefield
                             SendMessageGroup(pack.id, new List<string>() 
                             {
                                 $"输入{BF1Head} [ID] (平台) 来生成BF1游戏统计\n",
+                                "平台：pc ps4 xboxone\n",
                                 $"输入{BF1ServerHead} [服务器名] 来生成BF1服务器信息\n",
                                 $"输入{BF1WeaponHead} [ID] (类别) 来生成BF1武器统计\n",
-                                "类别：特种 机枪 近战 狙击枪 装备 自动装填步枪 手雷 步枪 散弹枪 驾驶员武器 冲锋枪 手枪",
+                                "类别：特种 机枪 近战 狙击枪 装备 半自动 手雷 步枪 霰弹枪 驾驶员武器 冲锋枪 手枪\n",
                                 $"输入{BF1VehicleHead} [ID] 来生成BF1载具统计"
                             });
                         }
@@ -89,7 +90,7 @@ namespace BotBattlefield
                             var arg = message.Substring(BF1Head.Length).Trim().Split(' ');
                             if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
                             {
-                                SendMessageGroup(pack.id, $"输入{BF1Head} [ID] (平台) 来生成BF1游戏统计");
+                                SendMessageGroup(pack.id, $"输入{BF1Head} [ID] (平台) 来生成BF1游戏统计，平台：pc ps4 xboxone");
                                 break;
                             }
                             string name = arg[0];
@@ -217,7 +218,7 @@ namespace BotBattlefield
                             var arg = message.Substring(BF1WeaponHead.Length).Trim().Split(' ');
                             if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
                             {
-                                SendMessageGroup(pack.id, $"输入{BF1WeaponHead} [ID] (类别) 来生成BF1武器统计");
+                                SendMessageGroup(pack.id, $"输入{BF1WeaponHead} [ID] (类别) 来生成BF1武器统计，类别：特种 机枪 近战 狙击枪 装备 半自动 手雷 步枪 霰弹枪 驾驶员武器 冲锋枪 手枪");
                                 break;
                             }
                             string name = arg[0];

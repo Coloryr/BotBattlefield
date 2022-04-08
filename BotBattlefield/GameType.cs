@@ -31,10 +31,10 @@ namespace BotBattlefield
         public static readonly WeaponType Melee = new("近战", "Melee");
         public static readonly WeaponType Rifle = new("狙击枪", "Rifle");
         public static readonly WeaponType Gadget = new("装备", "Gadget");
-        public static readonly WeaponType Self_loading_rifle = new("自动装填步枪", "Self-loading rifle");
+        public static readonly WeaponType Self_loading_rifle = new("半自动", "Self-loading rifle");
         public static readonly WeaponType Grenade = new("手雷", "Grenade");
         public static readonly WeaponType Standard_issue_rifles = new("步枪", "Standard issue rifles");
-        public static readonly WeaponType Shotgun = new("散弹枪", "Shotgun");
+        public static readonly WeaponType Shotgun = new("霰弹枪", "Shotgun");
         public static readonly WeaponType Tanker_pilot = new ("驾驶员武器", "Tanker/pilot");
         public static readonly WeaponType Smg = new("冲锋枪", "Smg");
         public static readonly WeaponType Sidearm = new("手枪", "Sidearm");
