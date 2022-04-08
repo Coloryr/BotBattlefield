@@ -517,6 +517,10 @@ namespace BotBattlefield
                                         SendMessageGroup(pack.id, $"输入{Config.Netty.Switch} [编号] 来切换地图");
                                         return;
                                     }
+                                    SendMessageGroup(pack.id, new List<string>()
+                                    {
+                                        $"正在切换地图{arg[0]}",
+                                    });
                                     if (!NettyClient.IsConnect)
                                     {
                                         SendMessageGroup(pack.id, new List<string>()
@@ -594,6 +598,10 @@ namespace BotBattlefield
                                         SendMessageGroup(pack.id, $"输入{Config.Netty.Kick} [玩家] (理由) 来踢出玩家");
                                         return;
                                     }
+                                    SendMessageGroup(pack.id, new List<string>()
+                                    {
+                                        $"正在踢出玩家{arg[0]}",
+                                    });
                                     if (!NettyClient.IsConnect)
                                     {
                                         SendMessageGroup(pack.id, new List<string>()
@@ -874,6 +882,50 @@ namespace BotBattlefield
                                 break;
                             }
                             await GenShow.GenScore(res);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                    else if (arg[0] == "kick")
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.KickPlayer(arg[1], arg[2]);
+                            if (res == null)
+                            {
+                                Console.WriteLine("错误");
+                                break;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                    else if (arg[0] == "switch")
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.SwitchMap(int.Parse(arg[1]));
+                            if (res == null)
+                            {
+                                Console.WriteLine("错误");
+                                break;
+                            }
                         }
                         catch (Exception e)
                         {
