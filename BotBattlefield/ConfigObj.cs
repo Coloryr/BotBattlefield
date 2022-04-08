@@ -18,6 +18,7 @@ namespace BotBattlefield
         public int CheckDelay { get; set; }
         public ConfigProxy Proxy { get; set; }
         public Dictionary<long, GroupHead> GroupHeads { get; set; }
+        public ToolNetty Netty { get; set; }
     }
     public record ConfigProxy
     { 
@@ -41,5 +42,18 @@ namespace BotBattlefield
         public string BF1ServerHead { get; set; }
         public string BF1WeaponHead { get; set; }
         public string BF1VehicleHead { get; set; }
+    }
+
+    public record ToolNetty
+    { 
+        public string IP { get; set; }
+        public int Port { get; set; }
+        public long Key { get; set; }
+        public string Score { get; set; }
+        public string Kick { get; set; }
+        public string Maps { get; set; }
+        public string Switch { get; set; }
+        public string State { get; set; }
+        public List<long> Admins { get; set; }
     }
 }

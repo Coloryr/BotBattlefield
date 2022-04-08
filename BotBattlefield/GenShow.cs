@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ColoryrSDK;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Drawing;
+using System.Numerics;
 
 namespace BotBattlefield
 {
@@ -23,6 +25,9 @@ namespace BotBattlefield
         private static Color text;
         private static Color back1;
         private static TextOptions FontNormalOpt;
+
+        private static Color Team1 = Color.Parse("#1E88E5");
+        private static Color Team2 = Color.Parse("#AB312D");
 
         private static Image star = Image.Load(Resource1.star);
 
@@ -341,7 +346,7 @@ namespace BotBattlefield
             return file;
         }
 
-        public static async Task<string> GenVehicles(BF1VehiclesObj obj, GameType game) 
+        public static async Task<string> GenVehicles(BF1VehiclesObj obj, GameType game)
         {
             BotMain.Log($"正在生成[{obj.userName}]的{game.url}载具图片");
 
@@ -396,7 +401,7 @@ namespace BotBattlefield
                 m.DrawText($"全部统计", font1, text, new PointF(20, 190));
                 m.DrawLines(text, 1, new PointF(0, 235), new PointF(500, 235));
 
-                m.DrawText($"总击杀 {kills}", font1, text, new PointF(20, 240)); 
+                m.DrawText($"总击杀 {kills}", font1, text, new PointF(20, 240));
                 m.DrawText($"总摧毁 {destroyeds}", font1, text, new PointF(270, 240));
                 m.DrawText($"平均KPM {kpms:0.00}", font1, text, new PointF(20, 280));
 
@@ -430,6 +435,305 @@ namespace BotBattlefield
             BotMain.Log($"生成图片[{game.url}_{obj.userName}_vehicle.png]");
 
             return file;
+        }
+
+        public static async Task<string> GenSocre(ScoreInfoObj obj)
+        {
+            BotMain.Log($"正在生成服务器计分板");
+
+            var head = await HttpUtils.GetImage(obj.Info.TeamOneUrl);
+            var img1 = Image.Load(head);
+            img1 = Utils.ZoomImage(img1, 40, 40);
+
+            head = await HttpUtils.GetImage(obj.Info.TeamTwoUrl);
+            var img2 = Image.Load(head);
+            img2 = Utils.ZoomImage(img2, 40, 40);
+
+            var sb = new PathBuilder();
+            sb.AddLine(new Vector2(420, 80), new Vector2(820, 80));
+            sb.AddLine(new Vector2(820, y: 120), new Vector2(420, 120));
+            sb.AddLine( new Vector2(420, 120), new Vector2(420, y: 80));
+            var path1 = sb.Build();
+
+            sb = new PathBuilder();
+            sb.AddLine(new Vector2(1580, 80), new Vector2(1180, 80));
+            sb.AddLine(new Vector2(1180, y: 120), new Vector2(1580, 120));
+            sb.AddLine(new Vector2(1580, 120), new Vector2(1580, y: 80));
+            var path2 = sb.Build();
+
+            float a = (float)obj.Info.Team1Score / 1000 * 400;
+
+            sb = new PathBuilder();
+            sb.AddLine(new Vector2(820 - a, 80), new Vector2(820, 80));
+            sb.AddLine(new Vector2(820, y: 120), new Vector2(820 - a, 120));
+            sb.AddLine(new Vector2(820 - a, 120), new Vector2(820 - a, y: 80));
+            var path3 = sb.Build();
+
+            a = (float)obj.Info.Team2Score / 1000 * 400;
+
+            sb = new PathBuilder();
+            sb.AddLine(new Vector2(1180 + a, 80), new Vector2(1180, 80));
+            sb.AddLine(new Vector2(1180, y: 120), new Vector2(1180 + a, 120));
+            sb.AddLine(new Vector2(1180 + a, 120), new Vector2(1180 + a, y: 80));
+            var path4 = sb.Build();
+
+            obj.Team1.Sort((a, b) => a.Score > b.Score ? -1 : 1);
+            obj.Team2.Sort((a, b) => a.Score > b.Score ? -1 : 1);
+
+            Image<Rgba32> image = new(2000, 1490);
+            image.Mutate(m =>
+            {
+                m.Clear(back);
+                m.DrawText(new TextOptions(font1) 
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(1000,0)
+                }, obj.Info.ServerName, text);
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(1000, 40)
+                }, $"地图：{obj.Info.MapName} 模式：{obj.Info.Mode}", text);
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(1000, 80)
+                }, obj.Info.ServerTimeS, text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(920, 80)
+                }, obj.Info.TeamOne, text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 1080, 80)
+                }, obj.Info.TeamTwo, text);
+
+                m.DrawImage(img1, new Point(840, 80), 1f);
+                m.DrawImage(img2, new Point(1120, 80), 1f);
+
+                m.Draw(Team1, 1.5f, path1);
+                m.Draw(Team2, 1.5f, path2);
+
+                m.Fill(Team1, path3);
+                m.Fill(Team2, path4);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Origin = new(x: 810, 80)
+                }, $"{obj.Info.Team1Score}", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Origin = new(x: 1190, 80)
+                }, $"{obj.Info.Team2Score}", text);
+
+                m.DrawLines(text, 1.0f, new PointF(0, 130), new PointF(2000, 130));
+                m.DrawLines(text, 1.5f, new PointF(999, 130), new PointF(999, 1490));
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 90, 140)
+                }, "等级", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 180, 140)
+                }, text: "名字", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 540, 140)
+                }, text: "击杀", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 620, 140)
+                }, text: "死亡", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 720, 140)
+                }, text: "KD", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 790, 140)
+                }, text: "KPM", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Origin = new(x: 980, 140)
+                }, text: "分数", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 1090, 140)
+                }, "等级", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 1180, 140)
+                }, text: "名字", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 1540, 140)
+                }, text: "击杀", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 1620, 140)
+                }, text: "死亡", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 1720, 140)
+                }, text: "KD", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Origin = new(x: 1790, 140)
+                }, text: "KPM", text);
+
+                m.DrawText(new TextOptions(font1)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Origin = new(x: 1980, 140)
+                }, text: "分数", text);
+
+                m.DrawLines(text, 1.0f, new PointF(0, 190), new PointF(2000, 190));
+
+                for (int a = 0; a < obj.Team1.Count; a++)
+                {
+                    var player = obj.Team1[a];
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(50, 200 + a * 40)
+                    }, $"{a + 1}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Origin = new(90, 200 + a * 40)
+                    }, $"{player.Rank}", text);
+
+                    string name = (string.IsNullOrWhiteSpace(player.Clan) ? "" : $"[{player.Clan}]") + player.Name;
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Origin = new(130, 200 + a * 40)
+                    }, name, text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(560, 200 + a * 40)
+                    }, $"{player.Kill}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(640, 200 + a * 40)
+                    }, $"{player.Dead}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(740, 200 + a * 40)
+                    }, $"{player.KD:0.00}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(820, 200 + a * 40)
+                    }, $"{player.KPM:0.00}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(980, 200 + a * 40)
+                    }, $"{player.Score}", text);
+                }
+
+                for (int a = 0; a < obj.Team2.Count; a++)
+                {
+                    var player = obj.Team2[a];
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(1050, 200 + a * 40)
+                    }, $"{a + 1}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Origin = new(1090, 200 + a * 40)
+                    }, $"{player.Rank}", text);
+
+                    string name = (string.IsNullOrWhiteSpace(player.Clan) ? "" : $"[{player.Clan}]") + player.Name;
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Origin = new(1130, 200 + a * 40)
+                    }, name, text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(1560, 200 + a * 40)
+                    }, $"{player.Kill}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(1640, 200 + a * 40)
+                    }, $"{player.Dead}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(1740, 200 + a * 40)
+                    }, $"{player.KD:0.00}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(1820, 200 + a * 40)
+                    }, $"{player.KPM:0.00}", text);
+
+                    m.DrawText(new TextOptions(font1)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new(1980, 200 + a * 40)
+                    }, $"{player.Score}", text);
+                }
+            });
+
+            image.SaveAsPng("test.png");
+            BotMain.Log($"生成图片[server_score.png]");
+            return null;
         }
     }
 }

@@ -75,7 +75,7 @@ namespace BotBattlefield
                         var temp1 = message.Split(' ');
                         if (temp1[0] == Help)
                         {
-                            SendMessageGroup(pack.id, new List<string>() 
+                            SendMessageGroup(pack.id, new List<string>()
                             {
                                 $"输入{BF1Head} [ID] (平台) 来生成BF1游戏统计\n",
                                 "平台：pc ps4 xboxone\n",
@@ -95,7 +95,7 @@ namespace BotBattlefield
                             }
                             string name = arg[0];
                             string uname = $"bf1_{name}";
-                            if (queues.ContainsKey(uname)) 
+                            if (queues.ContainsKey(uname))
                             {
                                 SendMessageGroup(pack.id, new List<string>()
                                 {
@@ -106,7 +106,7 @@ namespace BotBattlefield
                             }
                             if (Delay.Check(uname))
                             {
-                                SendMessageGroup(pack.id, new List<string>() 
+                                SendMessageGroup(pack.id, new List<string>()
                                 {
                                     $"[mirai:at:{pack.fid}]",
                                     $"你的查询过于频繁"
@@ -157,7 +157,7 @@ namespace BotBattlefield
                                 }
                                 name = Config.ServerLock[pack.id];
                             }
-                            else if(string.IsNullOrWhiteSpace(name))
+                            else if (string.IsNullOrWhiteSpace(name))
                             {
                                 SendMessageGroup(pack.id, $"输入{BF1ServerHead} [服务器名] 来生成BF1服务器信息");
                                 break;
@@ -337,6 +337,295 @@ namespace BotBattlefield
                                 }
                             });
                         }
+                        else if (temp1[0] == Config.Netty.State)
+                        {
+                            if (!Config.Netty.Admins.Contains(pack.fid))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"你没有权限使用这条指令",
+                                });
+                                break;
+                            }
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    if (!NettyClient.IsConnect)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"服管工具未连接，正在尝试连接",
+                                        });
+                                        Console.WriteLine("");
+                                        await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                                    }
+                                    var res = await NettyClient.CheckState();
+                                    if (res == null)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"获取服管工具状态失败",
+                                        });
+                                    }
+                                    else
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"游戏启动状态：{res.IsGameRun}\n",
+                                            $"工具初始化状态：{res.IsGameRun}",
+                                        });
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"获取服管工具状态错误");
+                                }
+                            });
+                        }
+                        else if (temp1[0] == Config.Netty.Score)
+                        {
+                            if (queues.ContainsKey("Netty_Gen_Socre!"))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"正在生成中",
+                                });
+                            }
+                            queues.TryAdd("Netty_Gen_Socre!", true);
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    SendMessageGroup(pack.id, new List<string>()
+                                    {
+                                        $"正在生成服务器计分板",
+                                    });
+                                    if (!NettyClient.IsConnect)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"服管工具未连接，正在尝试连接",
+                                        });
+                                        Console.WriteLine("");
+                                        await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                                    }
+                                    var res = await NettyClient.GetServerScore();
+                                    if (res == null)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"生成服务器计分板失败",
+                                        });
+                                    }
+                                    else
+                                    {
+                                        
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"生成服务器计分板错误");
+                                }
+                            });
+                        }
+                        else if (temp1[0] == Config.Netty.Maps)
+                        {
+                            if (!Config.Netty.Admins.Contains(pack.fid))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"你没有权限使用这条指令",
+                                });
+                                break;
+                            }
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    if (!NettyClient.IsConnect)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"服管工具未连接，正在尝试连接",
+                                        });
+                                        Console.WriteLine("");
+                                        await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                                    }
+                                    var res = await NettyClient.GetServerMap();
+                                    if (res == null)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"获取地图列表失败",
+                                        });
+                                    }
+                                    else
+                                    {
+                                        var list1 = new List<string>()
+                                        {
+                                            $"服务器地图列表：\n"
+                                        };
+                                        foreach (var item in res.Maps)
+                                        {
+                                            list1.Add($"{item.Key}:{item.Value}\n");
+                                        }
+                                        list1.Add($"输入{Config.Netty.Switch} [编号] 来切换地图");
+                                        SendMessageGroup(pack.id, list1);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"获取地图列表错误");
+                                }
+                            });
+                        }
+                        else if (temp1[0] == Config.Netty.Maps)
+                        {
+                            if (!Config.Netty.Admins.Contains(pack.fid))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"你没有权限使用这条指令",
+                                });
+                                break;
+                            }
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    var arg = message.Substring(Config.Netty.Maps.Length).Trim().Split(' ');
+                                    if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
+                                    {
+                                        SendMessageGroup(pack.id, $"输入{Config.Netty.Switch} [编号] 来切换地图");
+                                        return;
+                                    }
+                                    if (!NettyClient.IsConnect)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"服管工具未连接，正在尝试连接",
+                                        });
+                                        Console.WriteLine("");
+                                        await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                                    }
+                                    if (!int.TryParse(arg[0], out var index))
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"错误的编号",
+                                        });
+                                        return;
+                                    }
+                                    var res = await NettyClient.GetServerMap();
+                                    if (res == null)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"切换地图失败",
+                                        });
+                                        return;
+                                    }
+                                    if (!res.Maps.ContainsKey(index))
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"不存在编号",
+                                        });
+                                        return;
+                                    }
+                                    var res1 = await NettyClient.SwitchMap(index);
+                                    if (res1 == null || res1 == false)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"切换地图失败",
+                                        });
+                                    }
+                                    else
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"已切换",
+                                        });
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"切换地图错误");
+                                }
+                            });
+                        }
+                        else if (temp1[0] == Config.Netty.Kick)
+                        {
+                            if (!Config.Netty.Admins.Contains(pack.fid))
+                            {
+                                SendMessageGroup(pack.id, new List<string>()
+                                {
+                                    $"你没有权限使用这条指令",
+                                });
+                                break;
+                            }
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    var arg = message.Substring(Config.Netty.Kick.Length).Trim().Split(' ');
+                                    if (arg.Length == 1 && string.IsNullOrWhiteSpace(arg[0]))
+                                    {
+                                        SendMessageGroup(pack.id, $"输入{Config.Netty.Kick} [玩家] (理由) 来踢出玩家");
+                                        return;
+                                    }
+                                    if (!NettyClient.IsConnect)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"服管工具未连接，正在尝试连接",
+                                        });
+                                        Console.WriteLine("");
+                                        await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                                    }
+                                    var res = await NettyClient.KickPlayer(arg[0], arg.Length > 1 ? arg[1] : "Admin Kick");
+                                    if (res == null)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"踢出玩家失败",
+                                        });
+                                    }
+                                    else if (!res.HavePlayer)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"不存在玩家{arg[0]}",
+                                        });
+                                    }
+                                    else if (!res.Success)
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"踢出玩家失败",
+                                        });
+                                    }
+                                    else
+                                    {
+                                        SendMessageGroup(pack.id, new List<string>()
+                                        {
+                                            $"已踢出玩家",
+                                        });
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    logs.LogError(e);
+                                    SendMessageGroup(pack.id, $"踢出玩家错误");
+                                }
+                            });
+                        }
                     }
                     break;
             }
@@ -378,9 +667,11 @@ namespace BotBattlefield
             Delay.Start();
             robot.Start();
 
+            NettyClient.Key = Config.Netty.Key;
+
             if (Environment.UserInteractive)
             {
-                while (true) 
+                while (true)
                 {
                     var temp = Console.ReadLine();
                     var arg = temp.Split(' ');
@@ -428,7 +719,7 @@ namespace BotBattlefield
                         }
                         await GenShow.GenServers(data, GameType.BF1, name);
                     }
-                    else if (arg[0] == "weapon") 
+                    else if (arg[0] == "weapon")
                     {
                         if (arg.Length < 2)
                         {
@@ -462,11 +753,124 @@ namespace BotBattlefield
                         }
                         await GenShow.GenVehicles(data, GameType.BF1);
                     }
+                    else if (arg[0] == "tools") 
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.GetState();
+                            Console.WriteLine(res);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                    else if (arg[0] == "tools1")
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.CheckState();
+                            Console.WriteLine(res);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                    else if (arg[0] == "tools2")
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.GetServerInfo();
+                            Console.WriteLine(res);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                    else if (arg[0] == "tools3")
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.GetServerScore();
+                            Console.WriteLine(res);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                    else if (arg[0] == "tools4")
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.GetServerMap();
+                            Console.WriteLine(res);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                    else if (arg[0] == "score")
+                    {
+                        try
+                        {
+                            if (!NettyClient.IsConnect)
+                            {
+                                Console.WriteLine("服管工具未连接，正在尝试连接");
+                                await NettyClient.Start(Config.Netty.IP, Config.Netty.Port);
+                            }
+
+                            var res = await NettyClient.GetServerScore();
+                            if (res == null)
+                            {
+                                Console.WriteLine("生成错误");
+                                break;
+                            }
+                            await GenShow.GenSocre(res);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
                 }
             }
         }
 
-        public static void Close() 
+        public static void Close()
         {
             robot.Stop();
             Delay.Stop();
@@ -490,7 +894,7 @@ namespace BotBattlefield
                     QQ = 0,
                     Time = 10
                 },
-                Proxy = new() 
+                Proxy = new()
                 {
                     Enable = false,
                     IP = "127.0.0.1",
@@ -504,7 +908,19 @@ namespace BotBattlefield
                 BF1VehicleHead = "#bf1v",
                 GroupHeads = new(),
                 Groups = new(),
-                ServerLock = new()
+                ServerLock = new(),
+                Netty = new()
+                {
+                    IP = "127.0.0.1",
+                    Port = 23232,
+                    Key = 0,
+                    Score = "#score",
+                    Kick = "#kick",
+                    Maps = "#maps",
+                    Switch = "#switch",
+                    State = "#state",
+                    Admins = new()
+                }
             }, Local + "config.json");
         }
     }
