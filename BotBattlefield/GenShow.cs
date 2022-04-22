@@ -60,20 +60,31 @@ namespace BotBattlefield
         {
             BotMain.Log($"正在生成[{obj.userName}]的{game.url}统计图片");
             Image<Rgba32> image = new(500, 860);
-            var head = await HttpUtils.GetImage(obj.avatar);
-            var rank = await HttpUtils.GetImage(obj.rankImg);
-            var img = Image.Load(head);
-            var img1 = Image.Load(rank);
-            img = Utils.ZoomImage(img, 120, 120);
-            img1 = Utils.ZoomImage(img1, 50, 50);
+            Image img = null;
+            Image img1 = null;
+            if (!string.IsNullOrWhiteSpace(obj.avatar))
+            {
+                var head = await HttpUtils.GetImage(obj.avatar);
+                img = Image.Load(head);
+                img = Utils.ZoomImage(img, 120, 120);
+            }
+            
+            if (!string.IsNullOrWhiteSpace(obj.rankImg))
+            {
+                var rank = await HttpUtils.GetImage(obj.rankImg);
+                img1 = Image.Load(rank);
+                img1 = Utils.ZoomImage(img1, 50, 50);
+            }
+            
+           
             image.Mutate(m =>
             {
                 m.Clear(back);
                 m.DrawText($"{game.name} 玩家统计", title, text, new PointF(20, 0));
-                m.DrawImage(img, new Point(20, 50), 1);
+                if (img != null) m.DrawImage(img, new Point(20, 50), 1);
                 m.DrawText($"ID {obj.userName}", font1, text, new PointF(150, 70));
                 m.DrawText($"等级 {obj.rank}", font1, text, new PointF(210, 120));
-                m.DrawImage(img1, new Point(150, 110), 1);
+                if (img1 != null) m.DrawImage(img1, new Point(150, 110), 1);
 
                 m.DrawLines(text, 1, new PointF(0, 185), new PointF(500, 185));
                 m.DrawText($"个人对局", font1, text, new PointF(20, 190));

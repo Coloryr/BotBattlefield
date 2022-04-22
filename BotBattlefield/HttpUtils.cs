@@ -41,8 +41,8 @@ namespace BotBattlefield
             {
                 return null;                
             }
-
-            return JsonConvert.DeserializeObject<BF1StateObj>(await data.Content.ReadAsStringAsync());
+            var data1 = await data.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<BF1StateObj>(data1);
         }
 
         public static async Task<BF1ServerObj?> GetServers(GameType game, string name)
