@@ -1,6 +1,8 @@
 # BotBattlefield
 一个战地查询机器人插件
 
+可以与[战地1服管工具](https://github.com/CrazyZhang666/BF1.ServerAdminTools/tree/preview)联动
+
 不会构建？加群：571239090获取
 
 使用[ColorMirai](https://github.com/Coloryr/ColorMirai)
