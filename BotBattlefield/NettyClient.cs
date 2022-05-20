@@ -302,6 +302,10 @@ public class NettyClient
         {
             ResBack.Add(a, null);
         }
+        {
+            ResBack.Add(1270, null);
+            CallBack.Add(1270, new(0, 5));
+        }
         var bootstrap = new Bootstrap();
         bootstrap
             .Group(group)
@@ -346,6 +350,22 @@ public class NettyClient
         {
             CallBack[1].WaitOne();
             return ResBack[1] as StateObj;
+        });
+    }
+
+    public static async Task<string?> GetImage()
+    {
+        if (!IsConnect)
+            return null;
+        var pack = Unpooled.Buffer()
+            .WriteLong(Key)
+            .WriteByte(127)
+            .WriteByte(0);
+        await ClientChannel.WriteAndFlushAsync(pack);
+        return await Task.Run(() =>
+        {
+            CallBack[1270].WaitOne();
+            return ResBack[1270] as string;
         });
     }
 
@@ -488,6 +508,22 @@ public class NettyClient
                     case 7:
                         ResBack[7] = DecodePack.KickPlayer(buff);
                         CallBack[7].Release();
+                        break;
+                    case 127:
+                        byte index = buff.ReadByte();
+                        if (index == 0)
+                        {
+                            ResBack[1270] = buff.ReadString(buff.ReadInt(), Encoding.UTF8);
+                            CallBack[1270].Release();
+                        }
+                        else if (index == 60)
+                        {
+                            string temp = buff.ReadString(buff.ReadInt(), Encoding.UTF8);
+                            foreach (var item in BotMain.Config.LogGroups)
+                            {
+                                BotMain.robot.SendGroupMessage(0, item, new List<string>() { temp });
+                            }
+                        }
                         break;
                 }
             }

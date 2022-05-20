@@ -9,6 +9,8 @@ namespace BotBattlefield
        
         public List<long> Groups { get; set; }
 
+        public List<long> LogGroups { get; set; }
+
         public string BF1Head { get; set; }
         public string BF1ServerHead { get; set; }
         public string BF1WeaponHead { get; set; }
@@ -54,6 +56,7 @@ namespace BotBattlefield
         public string Maps { get; set; }
         public string Switch { get; set; }
         public string State { get; set; }
+        public string Image { get; set; }
         public List<long> Admins { get; set; }
     }
 }
