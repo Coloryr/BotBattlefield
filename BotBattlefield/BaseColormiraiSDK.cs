@@ -364,7 +364,7 @@ public abstract record PackBase
 /// <summary>
 /// 0 [插件]插件开始连接
 /// </summary>
-public record StartPack
+public record StartPack : PackBase
 {
     /// <summary>
     /// 插件名字
@@ -382,10 +382,6 @@ public record StartPack
     /// 监听的QQ号，可以为null
     /// </summary>
     public List<long> qqList { get; set; }
-    /// <summary>
-    /// 运行的QQ，0为不指定
-    /// </summary>
-    public long runQQ { get; set; }
 }
 /// <summary>
 /// 1 [机器人]图片上传前. 可以阻止上传（事件）
@@ -2549,7 +2545,7 @@ public partial class RobotSDK
             reg = Config.Pack,
             groups = Config.Groups,
             qqList = Config.QQs,
-            runQQ = Config.RunQQ
+            qq = Config.RunQQ
         };
     }
     /// <summary>
