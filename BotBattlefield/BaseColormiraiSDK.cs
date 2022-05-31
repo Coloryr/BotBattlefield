@@ -2618,7 +2618,7 @@ public partial class RobotSDK
                             Data = Encoding.UTF8.GetString(data)
                         });
                     }
-                    else if (Config.Check && time >= 20)
+                    else if (Config.Check && time >= 600)
                     {
                         time = 0;
                         var temp = BuildPack.Build(new object(), 60);
