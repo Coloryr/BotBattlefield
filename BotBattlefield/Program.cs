@@ -9,7 +9,7 @@ namespace BotBattlefield;
 
 public class BotMain
 {
-    public const string Version = "1.3.0";
+    public const string Version = "1.3.1";
     public static string Local { get; private set; }
     public static ConfigObj Config { get; private set; }
 
@@ -20,34 +20,16 @@ public class BotMain
 
     public static void SendMessageGroup(long group, List<string> message)
     {
-        var temp = BuildPack.Build(new SendGroupMessagePack
-        {
-            id = group,
-            message = message
-        }, 52);
-        robot.AddTask(temp);
+        robot.SendGroupMessage(0, group, message);
     }
     public static void SendMessageGroup(long group, string message)
     {
-        var temp = BuildPack.Build(new SendGroupMessagePack
-        {
-            id = group,
-            message = new()
-            {
-                message
-            }
-        }, 52);
-        robot.AddTask(temp);
+        robot.SendGroupMessage(0, group, new() { message });
     }
 
     public static void SendMessageGroupImg(long group, string local)
     {
-        var temp = BuildPack.Build(new SendGroupImageFilePack
-        {
-            id = group,
-            file = local
-        }, 75);
-        robot.AddTask(temp);
+        robot.SendGroupImageFile(0, group, local);
     }
 
     private static void Message(byte type, object data)
@@ -794,6 +776,7 @@ public class BotMain
             StateAction = State
         };
         robot.Set(config);
+        robot.SetPipe(new ColorMiraiNetty(robot));
 
         HttpUtils.Init();
         BF1GenShow.Init();
@@ -1094,7 +1077,7 @@ public class BotMain
             robot = new()
             {
                 IP = "127.0.0.1",
-                Port = 23333,
+                Port = 23335,
                 Auto = true,
                 QQ = 0,
                 Time = 10
