@@ -346,16 +346,7 @@ public class BotMain
                     else if (temp1[0] == BF1MatchesHead)
                     {
                         var name = message.Substring(BF1MatchesHead.Length).Trim();
-                        if (Config.ServerLock.ContainsKey(pack.id))
-                        {
-                            if (!string.IsNullOrWhiteSpace(name))
-                            {
-                                SendMessageGroup(pack.id, $"该群不能查询其他服务器");
-                                break;
-                            }
-                            name = Config.ServerLock[pack.id];
-                        }
-                        else if (string.IsNullOrWhiteSpace(name))
+                        if (string.IsNullOrWhiteSpace(name))
                         {
                             SendMessageGroup(pack.id, $"输入{BF1MatchesHead} [ID] 来获取BF1最近数据");
                             break;
