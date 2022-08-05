@@ -15,6 +15,7 @@ namespace BotBattlefield
         public string BF1ServerHead { get; set; }
         public string BF1WeaponHead { get; set; }
         public string BF1VehicleHead { get; set; }
+        public string BF1MatchesHead { get; set; }
         public Dictionary<long, string> ServerLock { get; set; }
         public string Help { get; set; }
         public int CheckDelay { get; set; }
@@ -44,6 +45,7 @@ namespace BotBattlefield
         public string BF1ServerHead { get; set; }
         public string BF1WeaponHead { get; set; }
         public string BF1VehicleHead { get; set; }
+        public string BF1MatchesHead { get; set; }
     }
 
     public record ToolNetty
