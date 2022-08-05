@@ -821,13 +821,13 @@ namespace BotBattlefield
                         }
                     }
 
-                    m.DrawText($"模式：{item.type}", font1, text, new PointF(10, y + 80));
+                    m.DrawText($"模式 {item.type}", font1, text, new PointF(10, y + 80));
 
-                    m.DrawText($"地图：{item.map}", font1, text, new PointF(10, y + 120));
+                    m.DrawText($"地图 {item.map}", font1, text, new PointF(10, y + 120));
 
-                    m.DrawText($"时间：{item.time}", font1, text, new PointF(10, y + 160));
+                    m.DrawText($"时间 {item.time}", font1, text, new PointF(10, y + 160));
 
-                    m.DrawText($"得分：{item.Score} 击杀：{item.Kills} 死亡：{item.Deaths}", font1, text, new PointF(10, y + 200));
+                    m.DrawText($"得分 {item.Score} 击杀 {item.Kills} 死亡 {item.Deaths}", font1, text, new PointF(10, y + 200));
 
                     m.DrawLines(text, 1, new PointF(0, y + 245), new PointF(500, y + 245));
 
