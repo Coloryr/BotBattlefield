@@ -242,6 +242,12 @@ namespace BotBattlefield
             });
             BotMain.Log($"生成图片[{game.url}_{name}_server.jpg]");
 
+            server.Dispose();
+            foreach (var item in servers)
+            {
+                item.Dispose();
+            }
+
             return file;
         }
 
@@ -356,6 +362,9 @@ namespace BotBattlefield
             image.SaveAsPng(file);
             BotMain.Log($"生成图片[{game.url}_{obj.userName}_weapon.png]");
 
+            img.Dispose();
+            image.Dispose();
+
             return file;
         }
 
@@ -447,13 +456,11 @@ namespace BotBattlefield
             image.SaveAsPng(file);
             BotMain.Log($"生成图片[{game.url}_{obj.userName}_vehicle.png]");
 
+            img.Dispose();
+            image.Dispose();
+
             return file;
         }
-
-        //public static async Task<string> GenReson()
-        //{ 
-            
-        //}
 
         public static async Task<string> GenScore(ScoreInfoObj obj)
         {
@@ -752,12 +759,15 @@ namespace BotBattlefield
             string file = Local + $"server_score.png";
             image.SaveAsPng(file);
             BotMain.Log($"生成图片[server_score.png]");
+
+            img1.Dispose();
+            img2.Dispose();
+            image.Dispose();
             return file;
         }
 
         public static async Task<string> GenMatches(List<MatchesItem> list, BF1StateObj obj, GameType game)
         {
-
             BotMain.Log($"正在生成[{obj.userName}]的{game.url}最近图片");
             Image<Rgba32> image = new(500, 185 + 250 * list.Count + 10);
             Image? img = null;
@@ -832,7 +842,7 @@ namespace BotBattlefield
             img1.Dispose();
             image.Dispose();
 
-            return null;
+            return file;
         }
     }
 }
