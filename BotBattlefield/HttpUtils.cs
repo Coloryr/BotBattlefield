@@ -16,15 +16,20 @@ namespace BotBattlefield
 
         public static void Init()
         {
-            client = new()
+            var socketsHandler = new SocketsHttpHandler
             {
-                Timeout = TimeSpan.FromSeconds(20),
+                
             };
+            
             if (BotMain.Config.Proxy.Enable)
             {
-                WebProxy proxy = new WebProxy(BotMain.Config.Proxy.IP, BotMain.Config.Proxy.Port);
-                HttpClient.DefaultProxy = proxy;
+                WebProxy proxy = new(BotMain.Config.Proxy.IP, BotMain.Config.Proxy.Port);
+                socketsHandler.Proxy = proxy;
             }
+            client = new()
+            {
+                Timeout = TimeSpan.FromSeconds(20)
+            };
         }
 
         public static HttpClient client;
