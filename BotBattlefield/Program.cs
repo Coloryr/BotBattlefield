@@ -9,7 +9,7 @@ namespace BotBattlefield;
 
 public class BotMain
 {
-    public const string Version = "1.3.1";
+    public const string Version = "1.3.2";
     public static string Local { get; private set; }
     public static ConfigObj Config { get; private set; }
 
@@ -32,7 +32,7 @@ public class BotMain
         robot.SendGroupImageFile(0, group, local);
     }
 
-    private static void Message(byte type, object data)
+    private static void Message(int type, object data)
     {
         switch (type)
         {
@@ -789,7 +789,7 @@ public class BotMain
         Assembly myAssem = Assembly.GetExecutingAssembly();
         var list = myAssem.GetManifestResourceNames();
 
-        if (Environment.UserInteractive)
+        if (!Config.NoInput)
         {
             while (true)
             {

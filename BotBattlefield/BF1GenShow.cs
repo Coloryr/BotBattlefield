@@ -41,7 +41,7 @@ namespace BotBattlefield
                 Directory.CreateDirectory(Local);
             }
 
-            var temp = SystemFonts.Families.Where(a => a.Name == "Microsoft YaHei").FirstOrDefault();
+            var temp = SystemFonts.Families.Where(a => a.Name == BotMain.Config.Font).FirstOrDefault();
 
             title = temp.CreateFont(40);
             font = temp.CreateFont(35);
